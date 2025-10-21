@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Cloud Recettes | L'Inspiration Quotidienne 🧑‍🍳</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+  <!-- iOS / PWA meta -->
+  <meta name="theme-color" content="#0a0a0c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Cloud Recettes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Favicon SVG (ok desktop) -->
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="%236B9CFF"/><stop offset="1" stop-color="%23FF6B9C"/></linearGradient></defs><rect rx="28" width="128" height="128" fill="url(%23g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="64">🍳</text></svg>'/>
+
+  <!-- Si tu fournis un vrai PNG, décommente cette ligne et place /icons/ios-touch-icon-180.png :
+  <link rel="apple-touch-icon" href="/icons/ios-touch-icon-180.png" />
+  -->
+
+  <!-- Manifest sera injecté en data URI par JS (avec icônes générées) -->
+
+  <style>
+    :root{
+      --glass-bg: rgba(255,255,255,0.18);
+      --glass-stroke: rgba(255,255,255,0.35);
+      --glass-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      --ink-900:#0b0b10; --ink-700:#2a2a35; --ink-500:#5f6270; --ink-300:#a1a5b2;
+      --accent-1:#6B9CFF; --accent-2:#FF6B9C; --accent-3:#8AF2D3;
+    }
+    html,body{height:100%}
+    body{
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: #111827;
+      background: radial-gradient(1200px 900px at 80% -10%, rgba(107,156,255,0.22), transparent 60%),
+                  radial-gradient(1200px 900px at 0% 100%, rgba(255,107,156,0.18), transparent 60%),
+                  linear-gradient(180deg, #0a0a0c, #111218 40%, #0b0c12);
+      min-height:100%;
+    }
+
+    /* Blobs décoratifs (liquid) */
+    .liquid-bg::before,
+    .liquid-bg::after{
+      content:"";
+      position:fixed;
+      inset:auto;
+      width:46vmax;
+      height:46vmax;
+      filter: blur(70px) saturate(140%);
+      opacity:.55;
+      z-index:-1;
+      pointer-events:none;
+      border-radius:50%;
+      background: conic-gradient(from 90deg, var(--accent-1), var(--accent-2), var(--accent-3), var(--accent-1));
+      animation: floatBlob 18s ease-in-out infinite alternate;
+      mix-blend-mode: screen;
+    }
+    .liquid-bg::before{ top:-12vmax; right:-8vmax; }
+    .liquid-bg::after{ bottom:-14vmax; left:-12vmax; animation-duration:22s; }
+
+    @keyframes floatBlob{
+      0%{ transform: translate3d(0,0,0) scale(1); }
+      100%{ transform: translate3d(2vmax,-2vmax,0) scale(1.06); }
+    }
+
+    /* Glass card utilitaire */
+    .glass {
+      background: var(--glass-bg);
+      -webkit-backdrop-filter: blur(14px) saturate(120%);
+      backdrop-filter: blur(14px) saturate(120%);
+      border: 1px solid var(--glass-stroke);
+      box-shadow: var(--glass-shadow);
+      border-radius: 18px;
+    }
+
+    /* Conteneur principal */
+    .main-app-container{
+      padding-bottom: 110px; /* pour la tab bar */
+      min-height: 100dvh;
+    }
+
+    /* Titre dégradé Apple-ish */
+    .brand-title{
+      background: linear-gradient(90deg, #fff, #CCD6FF 30%, #FFD0E0 60%, #D7FFF2);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    /* Zone scrollable (évite que la barre se pousse) */
+    .content-scroll-area{
+      overflow: auto;
+      max-height: calc(100dvh - 180px);
+    }
+
+    /* Tab bar style “liquid glass” */
+    .tab-bar{
+      height: calc(78px + env(safe-area-inset-bottom, 0px));
+      padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
+      border-top: 1px solid rgba(255,255,255,0.25);
+      box-shadow: 0 -10px 40px rgba(0,0,0,.35);
+      background: rgba(20,20,28,0.28);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      backdrop-filter: blur(18px) saturate(140%);
+    }
+    .tab-button{
+      gap:.35rem;
+      color:#e5e7eb;
+      opacity:.85;
+    }
+    .tab-button .pill{
+      transition: all .2s;
+    }
+    .tab-button.active{ opacity:1 }
+    .tab-button.active .pill{
+      background: linear-gradient(90deg, rgba(107,156,255,.22), rgba(255,107,156,.22));
+      border: 1px solid rgba(255,255,255,.35);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 8px 22px rgba(0,0,0,.25);
+    }
+    .tab-button:not(.active):hover{ transform: translateY(-1px); }
+
+    /* Boutons primaires */
+    .btn-primary{
+      background: linear-gradient(180deg, rgba(107,156,255,.95), rgba(107,156,255,.85));
+      color:white; font-weight:700;
+      border-radius: 14px;
+      padding: .75rem 1rem;
+      border: 1px solid rgba(255,255,255,.35);
+      box-shadow: 0 10px 28px rgba(107,156,255,.35);
+      transition: transform .08s ease, box-shadow .15s ease, opacity .2s;
+    }
+    .btn-primary:hover{ transform: translateY(-1px); box-shadow:0 14px 34px rgba(107,156,255,.4) }
+    .btn-secondary{
+      background: linear-gradient(180deg, rgba(255,107,156,.95), rgba(255,107,156,.85));
+      color:white; font-weight:700;
+      border-radius: 12px;
+      padding: .6rem .9rem;
+      border: 1px solid rgba(255,255,255,.35);
+      box-shadow: 0 10px 24px rgba(255,107,156,.32);
+      transition: transform .08s ease, box-shadow .15s ease;
+    }
+
+    /* Inputs en verre */
+    .form-input{
+      background: rgba(255,255,255,0.18);
+      color: #f8fafc;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 12px;
+      outline: none;
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+      backdrop-filter: blur(10px) saturate(120%);
+    }
+    .form-input::placeholder{ color: #cbd5e1 }
+    .form-input:focus{
+      box-shadow: 0 0 0 3px rgba(107,156,255,.28);
+      border-color: rgba(107,156,255,.8);
+    }
+
+    /* Listes & cartes */
+    .card-container{ border-radius:18px }
+    .card-container.glass{ color:#e6e9f2 }
+    .subtle{
+      color:#cbd5e1;
+    }
+
+    /* Modale */
+    #custom-modal .glass{
+      border-radius: 20px;
+    }
+
+    /* Photos */
+    .hero-image{ border-bottom: 1px solid rgba(255,255,255,.22) }
+
+    /* Utilitaires de couleur rapide */
+    .ink-300{color:var(--ink-300)} .ink-500{color:var(--ink-500)}
+    .accent-text{ color: #e6e9f2 }
+  </style>
+</head>
+<body class="liquid-bg">
+
+  <!-- Conteneur principal -->
+  <div class="main-app-container max-w-4xl mx-auto p-5 sm:p-8">
+    <header class="mb-6 sm:mb-8">
+      <h1 class="text-4xl sm:text-5xl font-extrabold brand-title tracking-tight">Cloud Recettes 🍳</h1>
+      <p id="db-status" class="text-sm ink-300 mt-2">Connexion Cloud en cours... 🔄</p>
+    </header>
+
+    <!-- Zone dynamique -->
+    <div id="content-area" class="content-scroll-area space-y-6"></div>
+  </div>
+
+  <!-- Barre d'onglets verre liquide -->
+  <nav id="tab-bar" class="tab-bar fixed bottom-0 left-0 right-0 glass">
+    <div class="max-w-4xl mx-auto grid grid-cols-4 gap-2">
+      <button data-view="home" class="tab-button flex flex-col items-center py-2">
+        <span class="pill px-4 py-2 rounded-full glass inline-flex items-center gap-2">
+          <span class="text-xl">🏠</span><span class="text-xs">Accueil</span>
+        </span>
+      </button>
+      <button data-view="list" class="tab-button flex flex-col items-center py-2">
+        <span class="pill px-4 py-2 rounded-full glass inline-flex items-center gap-2">
+          <span class="text-xl">📚</span><span class="text-xs">Recettes</span>
+        </span>
+      </button>
+      <button data-view="add" class="tab-button flex flex-col items-center py-2">
+        <span class="pill px-4 py-2 rounded-full glass inline-flex items-center gap-2">
+          <span class="text-xl">➕</span><span class="text-xs">Ajouter</span>
+        </span>
+      </button>
+      <button data-view="settings" class="tab-button flex flex-col items-center py-2">
+        <span class="pill px-4 py-2 rounded-full glass inline-flex items-center gap-2">
+          <span class="text-xl">⚙️</span><span class="text-xs">Réglages</span>
+        </span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Modale (glass) -->
+  <div id="custom-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50">
+    <div id="modal-content" class="glass w-[92%] max-w-sm mx-auto mt-[15vh] p-6 text-center">
+      <p id="modal-text" class="mb-4 text-lg"></p>
+      <div id="modal-actions" class="flex justify-center gap-3">
+        <button id="modal-confirm" class="btn-primary min-w-[90px]">OK</button>
+        <button id="modal-cancel" class="btn-secondary min-w-[90px] hidden">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- === Ton JS d’origine (Firebase + rendu vues) — conservé, avec styles adaptés === -->
+  <script type="module">
+    // --- IMPORTS FIREBASE ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, deleteDoc, setLogLevel, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // ----------------------------------------------------------------------------------
+    // CONFIGURATION FIREBASE 
+    // ----------------------------------------------------------------------------------
+    const __firebase_config = '{"apiKey":"AIzaSyDQ7lViDGWm75JlobSR9sJv0wirTsBSw9s","authDomain":"recipes-8ecb7.firebaseapp.com","projectId":"recipes-8ecb7","storageBucket":"recipes-8ecb7.firebasestorage.app","messagingSenderId":"490916438905","appId":"1:490916438905:web:eb136aa7738a795ccfc5a8","measurementId":"G-T3NNS1DP23"}';
+    const firebaseConfig = JSON.parse(__firebase_config);
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'recipes-8ecb7';
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
+    const IS_CLOUD_ENABLED = true;
+
+    const appState = {
+      db:null, auth:null, userId:null, isAuthReady:false,
+      recipes:[], activeView:'home', detailRecipeId:null, quantityFactor:1, isLocalMode:false,
+      firebaseConfig
+    };
+
+    // === Helpers UI (modale, etc.) ===
+    function showCustomModal(message, isConfirm=false){
+      return new Promise(resolve=>{
+        const modal=document.getElementById('custom-modal');
+        const modalContent=document.getElementById('modal-content');
+        modalContent.innerHTML = `
+          <p id="modal-text" class="mb-4 text-lg accent-text"></p>
+          <div id="modal-actions" class="flex justify-center gap-3">
+            <button id="modal-confirm" class="btn-primary min-w-[90px]">OK</button>
+            <button id="modal-cancel" class="btn-secondary min-w-[90px] hidden">Annuler</button>
+          </div>`;
+        const t=modalContent.querySelector('#modal-text');
+        const ok=modalContent.querySelector('#modal-confirm');
+        const cancel=modalContent.querySelector('#modal-cancel');
+        t.innerHTML = message;
+        if(isConfirm){ cancel.classList.remove('hidden'); ok.textContent='Confirmer'; }
+        else{ cancel.classList.add('hidden'); ok.textContent='OK'; }
+        ok.onclick=()=>{ modal.classList.add('hidden'); resolve(true); };
+        cancel.onclick=()=>{ modal.classList.add('hidden'); resolve(false); };
+        modal.classList.remove('hidden');
+      });
+    }
+
+    function showConfigModal(){
+      const keys = Object.keys(appState.firebaseConfig);
+      const rows = keys.map(k=>`
+        <div class="flex flex-col sm:flex-row justify-between py-2 border-b border-white/15 last:border-b-0">
+          <span class="text-sm ink-300 w-28">${k}:</span>
+          <code class="text-xs font-mono text-slate-200 break-all ml-0 sm:ml-4">${appState.firebaseConfig[k]}</code>
+        </div>`).join('');
+      const modal=document.getElementById('custom-modal');
+      const content=document.getElementById('modal-content');
+      content.innerHTML = `
+        <h3 class="text-xl font-bold brand-title mb-4 pb-2 border-b border-white/20">🐞 Configuration Firebase</h3>
+        <div class="text-left p-2 glass">${rows}</div>
+        <button id="modal-close" class="btn-primary mt-6">Fermer</button>`;
+      document.getElementById('modal-close').onclick=()=>modal.classList.add('hidden');
+      modal.classList.remove('hidden');
+    }
+    window.showConfigModal = showConfigModal;
+
+    // Fichiers → Base64
+    function readFileAsDataURL(file){
+      return new Promise((res,rej)=>{
+        const r=new FileReader();
+        r.onload=()=>res(r.result);
+        r.onerror=rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    // === Firebase init/auth ===
+    async function initFirebase(){
+      const status=document.getElementById('db-status');
+      try{
+        const app=initializeApp(firebaseConfig);
+        appState.db=getFirestore(app);
+        appState.auth=getAuth(app);
+        setLogLevel('debug');
+
+        if(initialAuthToken) await signInWithCustomToken(appState.auth, initialAuthToken);
+        else await signInAnonymously(appState.auth);
+
+        onAuthStateChanged(appState.auth,(user)=>{
+          if(user){
+            appState.userId=user.uid; appState.isAuthReady=true;
+            status.textContent=`✅ Connecté (ID: ${user.uid.substring(0,8)}...)`;
+            status.classList.remove('ink-300'); status.classList.add('text-green-300');
+            subscribeToRecipes();
+          }else{
+            appState.isAuthReady=true; renderApp();
+          }
+        });
+      }catch(e){
+        console.error(e);
+        status.textContent=`❌ Erreur de connexion: ${e.code}`;
+        status.classList.add('text-red-300');
+        showCustomModal(`Erreur critique Firebase: ${e.code}. Vérifiez Auth & domaines autorisés.`, false);
+      }
+    }
+
+    function getRecipesCollectionRef(){
+      if(!appState.db||!appState.userId) return null;
+      return collection(appState.db, `artifacts/${appId}/users/${appState.userId}/recipes`);
+    }
+
+    function subscribeToRecipes(){
+      const ref=getRecipesCollectionRef(); if(!ref) return;
+      const q=query(ref);
+      onSnapshot(q,(snap)=>{
+        const rows=[];
+        snap.forEach(d=>{
+          const data=d.data(); const createdAt=data.createdAt||{toDate:()=>new Date()};
+          rows.push({ id:d.id, ...data, createdAt: createdAt.toDate ? createdAt.toDate() : new Date(createdAt) });
+        });
+        appState.recipes = rows.sort((a,b)=>b.createdAt.getTime()-a.createdAt.getTime());
+        renderApp();
+      },(err)=>{
+        console.error(err);
+        showCustomModal(`Erreur de lecture des données: ${err.code}`, false);
+      });
+    }
+
+    window.switchView = (view, docId=null)=>{ appState.activeView=view; appState.detailRecipeId=docId; renderApp(); };
+    window.updateQuantityFactor = (f)=>{ appState.quantityFactor=f; renderApp(); };
+
+    function updateTabStyles(){
+      document.querySelectorAll('.tab-button').forEach(b=>{
+        const active = b.getAttribute('data-view')===appState.activeView;
+        b.classList.toggle('active', active);
+      });
+    }
+
+    function renderApp(){
+      updateTabStyles();
+      const container=document.getElementById('content-area');
+      if(!appState.isAuthReady){ container.innerHTML=`<div class="glass p-8 text-center subtle">Authentification en cours…</div>`; return; }
+      switch(appState.activeView){
+        case 'home': renderHome(container); break;
+        case 'list': renderRecipeList(container); break;
+        case 'add': renderAddForm(container); break;
+        case 'settings': renderSettings(container); break;
+        case 'detail': renderRecipeDetail(container); break;
+        default: renderHome(container);
+      }
+    }
+
+    function renderHome(container){
+      const total=appState.recipes.length;
+      const last=appState.recipes[0];
+      const rnd= total>0 ? appState.recipes[Math.floor(Math.random()*total)] : null;
+      const recent= appState.recipes.slice(0,3);
+
+      container.innerHTML = `
+        <div class="space-y-8">
+          <div class="glass card-container p-6">
+            <h2 class="text-2xl font-bold accent-text mb-1">Votre Cuisine Cloud ✨</h2>
+            <p class="subtle">Trouvez, créez et partagez vos meilleures recettes.</p>
+            <button onclick="switchView('add')" class="btn-primary mt-4">Ajouter une recette</button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="glass card-container p-4 text-center">
+              <p class="text-4xl font-extrabold brand-title">${total}</p>
+              <p class="subtle text-sm">Recettes Totales</p>
+            </div>
+            <div class="glass card-container p-4 text-center">
+              <p class="text-4xl font-extrabold" style="color:#8AF2D3">${last? last.prepTime : 'N/A'}</p>
+              <p class="subtle text-sm">Dernière Prépa. (min)</p>
+            </div>
+          </div>
+
+          ${rnd ? `
+          <div class="glass card-container p-6">
+            <h3 class="text-xl font-bold mb-3 brand-title">Suggestion du Chef 💡</h3>
+            <p class="text-xl font-semibold text-white/90 mb-1">${rnd.title}</p>
+            <p class="subtle text-sm mb-4">Temps total: ${(rnd.prepTime||0)+(rnd.cookTime||0)} min</p>
+            <button onclick="switchView('detail','${rnd.id}')" class="btn-secondary w-full">Voir la recette</button>
+          </div>` : `
+          <p class="glass card-container p-6 text-center subtle">Ajoutez des recettes pour obtenir une suggestion !</p>`}
+
+          <div class="glass card-container p-6">
+            <h3 class="text-xl font-bold mb-3 brand-title">Récemment ajoutées 🕒</h3>
+            <div class="space-y-3">
+              ${recent.map(r=>`
+                <div onclick="switchView('detail','${r.id}')" class="flex items-center p-3 rounded-lg hover:bg-white/10 cursor-pointer transition-colors">
+                  <span class="text-2xl mr-3" style="color:#FF6B9C">⭐</span>
+                  <div>
+                    <p class="font-medium text-white/90">${r.title}</p>
+                    <p class="text-xs subtle">${r.prepTime} min de prép.</p>
+                  </div>
+                </div>`).join('')}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderRecipeList(container){
+      container.innerHTML = `
+        <div class="glass card-container p-6">
+          <h2 class="text-2xl font-bold mb-6 brand-title">Toutes vos Recettes 📚</h2>
+          ${appState.recipes.length===0 ?
+            '<p class="subtle text-center py-10">Aucune recette pour l’instant. Cliquez sur Ajouter !</p>' :
+            `<div id="recipe-list" class="divide-y divide-white/10">
+              ${appState.recipes.map(r=>`
+                <div onclick="switchView('detail','${r.id}')" class="flex items-center py-4 cursor-pointer hover:bg-white/5 rounded-md px-2 -mx-2 transition-colors">
+                  ${r.photo ? 
+                    `<img src="${r.photo}" onerror="this.onerror=null;this.src='https://placehold.co/60x60/1b1d24/9aa3b2?text=🍽️'" class="w-16 h-16 object-cover rounded-lg mr-4 border border-white/20" alt="Photo">` :
+                    `<div class="w-16 h-16 glass rounded-lg mr-4 flex items-center justify-center text-3xl">🍽️</div>`
+                  }
+                  <div class="flex-grow">
+                    <p class="font-semibold text-white/90">${r.title}</p>
+                    <p class="text-sm subtle">⏱️ Préparation: ${r.prepTime} min</p>
+                  </div>
+                  <span class="text-white/40 text-2xl font-bold ml-4">&gt;</span>
+                </div>`).join('')}
+            </div>`
+          }
+        </div>`;
+    }
+
+    function parseAndApplyFactor(line,factor){
+      line=line.trim(); if(!line) return '';
+      const m=line.match(/^(\d+([.,]\d+)?)\s+(.*)/);
+      if(m){
+        let q=parseFloat(m[1].replace(',','.'));
+        if(!isNaN(q)){
+          const n=q*factor;
+          const f= Number.isInteger(n)? n : n.toFixed(2);
+          return `<span class="font-bold" style="color:#8AF2D3">${f}</span> ${m[3]}`;
+        }
+      }
+      return `<span class="font-medium text-white/90">${line}</span>`;
+    }
+
+    function renderRecipeDetail(container){
+      const r=appState.recipes.find(x=>x.id===appState.detailRecipeId);
+      if(!r){ container.innerHTML=`<div class="glass p-8 text-center text-red-300">Recette introuvable.</div>`; return; }
+
+      const ingredientsHTML = r.ingredients.split('\n').filter(Boolean).map(l=>`
+        <li class="py-2 flex items-start text-white/90">
+          <span class="mr-3" style="color:#8AF2D3">✓</span>${parseAndApplyFactor(l, appState.quantityFactor)}
+        </li>`).join('');
+
+      const steps = r.preparation.split('\n').filter(Boolean).map((s,i)=>`
+        <div class="flex items-start mb-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mr-4" style="background:linear-gradient(180deg, rgba(255,107,156,.95), rgba(255,107,156,.8)); color:white;">${i+1}</div>
+          <p class="text-white/90">${s}</p>
+        </div>`).join('');
+
+      container.innerHTML = `
+        <div class="glass card-container overflow-hidden">
+          <div class="h-64 relative hero-image bg-black/20">
+            ${r.photo ? `<img src="${r.photo}" onerror="this.onerror=null;this.src='https://placehold.co/800x600/1b1d24/9aa3b2?text=Image+Recette'" class="w-full h-full object-cover" alt="Photo">` : `<div class="w-full h-full flex items-center justify-center text-5xl text-white/40">🍲</div>`}
+            <div class="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent flex items-end p-6">
+              <h2 class="text-3xl font-extrabold text-white drop-shadow-lg">${r.title}</h2>
+            </div>
+          </div>
+
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <button onclick="switchView('list')" class="text-white/80 hover:text-white font-medium flex items-center">
+                <span class="text-2xl mr-1">&larr;</span> Retour
+              </button>
+              <button onclick="window.handleDeleteRecipe('${r.id}','${r.title}')" class="p-2 rounded-full hover:bg-white/10" title="Supprimer">
+                <span class="text-2xl">🗑️</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8 p-4 glass">
+              <div class="text-center">
+                <span class="block text-3xl mb-1">⏱️</span>
+                <span class="font-bold text-white/90">${r.prepTime} min</span>
+                <p class="text-xs subtle">Préparation</p>
+              </div>
+              <div class="text-center">
+                <span class="block text-3xl mb-1">🔥</span>
+                <span class="font-bold text-white/90">${r.cookTime || 0} min</span>
+                <p class="text-xs subtle">Cuisson</p>
+              </div>
+              ${r.cookTemp ? `
+              <div class="text-center">
+                <span class="block text-3xl mb-1">🌡️</span>
+                <span class="font-bold text-white/90">${r.cookTemp}°C</span>
+                <p class="text-xs subtle">Four</p>
+              </div>` : ``}
+            </div>
+
+            <h3 class="text-2xl font-bold mb-3 brand-title">Ingrédients</h3>
+            <p class="mb-3 text-sm subtle">Portions/Facteur actuel : <span class="font-bold" style="color:#6B9CFF">x${appState.quantityFactor}</span></p>
+            <div class="flex flex-wrap gap-2 mb-6">
+              ${[0.5,1,1.5,2,3].map(f=>`
+                <button onclick="updateQuantityFactor(${f})" class="px-3 py-1 rounded-full text-sm font-semibold ${appState.quantityFactor===f ? 'btn-primary' : 'glass'}">x${f}</button>
+              `).join('')}
+            </div>
+
+            <ul class="list-none pl-0 mb-8 divide-y divide-white/10 border-y border-white/10">
+              ${ingredientsHTML}
+            </ul>
+
+            <h3 class="text-2xl font-bold mb-4 brand-title">Préparation</h3>
+            <div class="space-y-4">${steps}</div>
+          </div>
+        </div>`;
+    }
+
+    function renderAddForm(container){
+      container.innerHTML = `
+        <div class="glass card-container p-6">
+          <h2 class="text-2xl font-bold mb-6 brand-title">Ajouter une Recette ✍️</h2>
+          <form id="add-recipe-form" class="space-y-6">
+            <div>
+              <label for="title" class="block text-sm subtle mb-1">Titre *</label>
+              <input type="text" id="title" required class="form-input w-full px-4 py-2">
+            </div>
+
+            <div>
+              <label class="block text-sm subtle mb-2">Photo</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input type="file" id="photo-file" accept="image/*" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/25 cursor-pointer">
+                <div>
+                  <label for="photo-url" class="block text-xs subtle mb-1">Ou URL 🔗</label>
+                  <input type="text" id="photo-url" class="form-input w-full px-4 py-2" placeholder="https://…">
+                </div>
+              </div>
+              <p class="text-xs text-red-300 mt-2">⚠️ Évitez &gt; 1Mo si Base64.</p>
+              <div id="image-preview" class="mt-4 hidden">
+                <p class="text-sm subtle mb-2">Aperçu :</p>
+                <img id="preview-img" class="w-32 h-32 object-cover rounded-xl border border-white/20" alt="Aperçu">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label for="prepTime" class="block text-sm subtle mb-1">Prépa. (min) *</label>
+                <input type="number" id="prepTime" required min="1" class="form-input w-full px-4 py-2">
+              </div>
+              <div>
+                <label for="cookTime" class="block text-sm subtle mb-1">Cuisson (min)</label>
+                <input type="number" id="cookTime" min="0" class="form-input w-full px-4 py-2">
+              </div>
+              <div>
+                <label for="cookTemp" class="block text-sm subtle mb-1">Temp. (°C)</label>
+                <input type="number" id="cookTemp" min="0" class="form-input w-full px-4 py-2">
+              </div>
+            </div>
+
+            <div>
+              <label for="ingredients" class="block text-sm subtle mb-1">Ingrédients (un par ligne) *</label>
+              <textarea id="ingredients" rows="5" required class="form-input w-full px-4 py-2" placeholder="Ex: 2 tasses de farine&#10;1 œuf&#10;50 g de sucre"></textarea>
+            </div>
+
+            <div>
+              <label for="preparation" class="block text-sm subtle mb-1">Préparation *</label>
+              <textarea id="preparation" rows="8" required class="form-input w-full px-4 py-2"></textarea>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn-primary w-full shadow-lg">Sauvegarder la Recette</button>
+          </form>
+        </div>`;
+
+      document.getElementById('add-recipe-form').addEventListener('submit', handleAddRecipe);
+      const fileInput=document.getElementById('photo-file');
+      const urlInput=document.getElementById('photo-url');
+      const previewContainer=document.getElementById('image-preview');
+      const previewImg=document.getElementById('preview-img');
+
+      const updatePreview=()=>{
+        const f=fileInput.files[0];
+        const url=urlInput.value.trim();
+        if(f){
+          const reader=new FileReader();
+          reader.onload=(e)=>{ previewImg.src=e.target.result; previewContainer.classList.remove('hidden'); };
+          reader.readAsDataURL(f); urlInput.value='';
+        }else if(url){
+          previewImg.src=url; previewContainer.classList.remove('hidden');
+        }else{
+          previewContainer.classList.add('hidden'); previewImg.src='';
+        }
+      };
+      fileInput.addEventListener('change', updatePreview);
+      urlInput.addEventListener('input', updatePreview);
+    }
+
+    function renderSettings(container){
+      container.innerHTML = `
+        <div class="glass card-container p-6 space-y-6">
+          <h2 class="text-2xl font-bold brand-title">Réglages & Cloud ⚙️</h2>
+          <p class="subtle text-sm">Gérez votre connexion et vos données.</p>
+
+          <div class="glass p-4">
+            <h3 class="text-xl font-semibold text-white/90"><span class="mr-2">👤</span> Identifiant Utilisateur</h3>
+            <p class="text-sm subtle break-all mt-2">ID: <span class="font-mono font-bold text-white/90">${appState.userId || 'Non Authentifié'}</span></p>
+          </div>
+
+          <div class="glass p-4 border border-red-400/30">
+            <h3 class="text-xl font-semibold text-red-200 mb-2"><span class="mr-2">🐞</span> Configuration Firebase (Debug)</h3>
+            <p class="text-sm text-red-200/80">⚠️ Informations sensibles pour le débogage.</p>
+            <button onclick="window.showConfigModal()" class="btn-secondary w-full mt-3">Afficher la configuration</button>
+          </div>
+
+          <div class="glass p-4 border border-blue-300/30">
+            <h3 class="text-xl font-semibold" style="color:#BFD6FF">Gestion des Données Cloud</h3>
+            <p class="subtle text-sm">Export, import et réinitialisation.</p>
+            <button onclick="window.exportData()" class="btn-primary w-full mt-3">Exporter (JSON) 📥</button>
+            <label for="import-file" class="block mt-4 text-sm subtle">Importer depuis un fichier JSON :</label>
+            <input type="file" id="import-file" accept=".json" onchange="window.handleImport(event)" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/25 cursor-pointer">
+            <button onclick="window.handleClearAllData()" class="btn-secondary w-full mt-6">Réinitialiser (Tout supprimer) 💀</button>
+          </div>
+        </div>`;
+    }
+
+    async function handleAddRecipe(e){
+      e.preventDefault();
+      const form=e.target; const btn=document.getElementById('submit-btn');
+      btn.disabled=true; btn.textContent='Enregistrement… ⏳';
+      try{
+        let photoData=null;
+        const file=form.elements['photo-file'].files[0];
+        const url=form.elements['photo-url'].value.trim();
+        if(file){
+          if(file.size>1024*1024){ await showCustomModal("L'image est trop volumineuse (>1Mo).", false); throw new Error("File too large"); }
+          photoData = await readFileAsDataURL(file);
+        } else if(url){ photoData=url; }
+
+        const newRecipe={
+          title: form.elements.title.value.trim(),
+          photo: photoData,
+          prepTime: parseInt(form.elements.prepTime.value)||0,
+          cookTime: parseInt(form.elements.cookTime.value)||null,
+          cookTemp: parseInt(form.elements.cookTemp.value)||null,
+          ingredients: form.elements.ingredients.value.trim(),
+          preparation: form.elements.preparation.value.trim(),
+          createdAt: serverTimestamp()
+        };
+
+        const ref=getRecipesCollectionRef(); if(!ref) throw new Error("Base de données non prête.");
+        await addDoc(ref, newRecipe);
+        form.reset(); document.getElementById('image-preview').classList.add('hidden');
+        showCustomModal('Recette sauvegardée ! 🎉', false);
+        switchView('list');
+      }catch(e2){
+        if(e2.message!=="File too large") showCustomModal(`Erreur: ${e2.message}`, false);
+      }finally{
+        btn.disabled=false; btn.textContent='Sauvegarder la Recette';
+      }
+    }
+
+    window.handleDeleteRecipe = async (id,title)=>{
+      const ok=await showCustomModal(`Supprimer "${title}" ?`, true);
+      if(!ok) return;
+      try{
+        const ref=getRecipesCollectionRef(); if(!ref) throw new Error("Base de données non prête.");
+        await deleteDoc(doc(ref,id));
+        showCustomModal('Recette supprimée 🗑️', false);
+        switchView('list');
+      }catch(e){ showCustomModal(`Erreur suppression: ${e.message}`, false); }
+    };
+
+    window.exportData = function(){
+      const data = appState.recipes.map(({id,createdAt, ...rest})=>rest);
+      const str=JSON.stringify(data,null,2);
+      const uri='data:application/json;charset=utf-8,'+encodeURIComponent(str);
+      const name=`recettes_export_${new Date().toISOString().split('T')[0]}.json`;
+      const a=document.createElement('a'); a.href=uri; a.download=name; a.click();
+      showCustomModal('Données exportées 📥', false);
+    };
+
+    window.handleImport = async function(ev){
+      const file=ev.target.files[0]; if(!file) return;
+      const reader=new FileReader();
+      reader.onload= async (e)=>{
+        try{
+          const arr=JSON.parse(e.target.result);
+          if(!Array.isArray(arr)) throw new Error("Le fichier doit contenir un tableau de recettes JSON.");
+          const ok=await showCustomModal(`Importer ${arr.length} recettes ?`, true);
+          if(!ok){ ev.target.value=''; return; }
+
+          const ref=getRecipesCollectionRef(); if(!ref) throw new Error("Base de données non prête.");
+          const batch=writeBatch(appState.db);
+          arr.slice(0,500).forEach(r=> batch.set(doc(ref), {...r, createdAt: serverTimestamp()}) );
+          await batch.commit();
+          showCustomModal('Importation terminée ✅', false);
+          ev.target.value='';
+        }catch(err){
+          showCustomModal(`Erreur de fichier: ${err.message}`, false);
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    window.handleClearAllData = async function(){
+      const ok=await showCustomModal('Supprimer TOUTES les recettes du Cloud ?', true);
+      if(!ok) return;
+      try{
+        const ref=getRecipesCollectionRef(); if(!ref) throw new Error("Base de données non prête.");
+        const snap=await getDocs(ref);
+        const batch=writeBatch(appState.db);
+        snap.docs.forEach(d=>batch.delete(d.ref));
+        await batch.commit();
+        showCustomModal('Tout a été supprimé. 🗑️', false);
+        switchView('home');
+      }catch(err){ showCustomModal('Erreur lors de la suppression.', false); }
+    };
+
+    // === Icône & manifest auto-générés ===
+    function drawIcon(size=512){
+      const cnv=document.createElement('canvas'); cnv.width=cnv.height=size;
+      const ctx=cnv.getContext('2d');
+
+      // Fond arrondi
+      const r=size*0.22;
+      const pad=size*0.06;
+      const w=size-2*pad, h=w;
+      const x=pad, y=pad;
+
+      ctx.save();
+      const roundRect=(x,y,w,h,r)=>{
+        ctx.beginPath();
+        ctx.moveTo(x+r,y);
+        ctx.arcTo(x+w,y,x+w,y+h,r);
+        ctx.arcTo(x+w,y+h,x,y+h,r);
+        ctx.arcTo(x,y+h,x,y,r);
+        ctx.arcTo(x,y,x+w,y,r);
+        ctx.closePath();
+      };
+      roundRect(x,y,w,h,r);
+      ctx.clip();
+
+      // Dégradé
+      const g=ctx.createLinearGradient(0,0,size,size);
+      g.addColorStop(0,"#6B9CFF"); g.addColorStop(.5,"#FF6B9C"); g.addColorStop(1,"#8AF2D3");
+      ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
+
+      // Reflets
+      ctx.globalAlpha=.22;
+      ctx.fillStyle="#fff";
+      ctx.beginPath();
+      ctx.ellipse(size*.35,size*.28,size*.35,size*.20, -0.3, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha=1;
+
+      // Emoji 🍳
+      ctx.font=`${Math.round(size*0.52)}px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji`;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("🍳", size/2, size/2+size*0.02);
+
+      ctx.restore();
+
+      // Liseré
+      ctx.strokeStyle="rgba(255,255,255,.65)";
+      ctx.lineWidth=Math.max(2,size*0.02);
+      roundRect(x,y,w,h,r);
+      ctx.stroke();
+
+      return cnv.toDataURL("image/png");
+    }
+
+    function ensureAppleTouchIcon(){
+      // Si aucun apple-touch-icon fourni, on génère un 180x180
+      const has = [...document.querySelectorAll('link[rel="apple-touch-icon"]')].length>0;
+      if(!has){
+        const link=document.createElement('link');
+        link.rel='apple-touch-icon';
+        link.sizes='180x180';
+        link.href=drawIcon(180);
+        document.head.appendChild(link);
+      }
+    }
+
+    function installManifestWithIcons(){
+      const icons = [192,256,512].map(sz=>({ src: drawIcon(sz), sizes: `${sz}x${sz}`, type: "image/png", purpose: "any maskable" }));
+      const manifest = {
+        name: "Cloud Recettes",
+        short_name: "Recettes",
+        display: "standalone",
+        start_url: ".",
+        background_color: "#0a0a0c",
+        theme_color: "#0a0a0c",
+        icons
+      };
+      const blob = new Blob([JSON.stringify(manifest)], {type:"application/manifest+json"});
+      const url = URL.createObjectURL(blob);
+      const link=document.createElement('link'); link.rel='manifest'; link.href=url;
+      document.head.appendChild(link);
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      initFirebase();
+      document.querySelectorAll('.tab-button').forEach(b=>{
+        b.addEventListener('click', ()=> switchView(b.getAttribute('data-view')) );
+      });
+      document.getElementById('custom-modal').classList.add('hidden');
+
+      // Icônes & manifest
+      ensureAppleTouchIcon();
+      installManifestWithIcons();
+    });
+  </script>
+</body>
+</html>
