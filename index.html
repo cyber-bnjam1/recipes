@@ -20,11 +20,9 @@
   <!-- Favicon SVG (ok desktop) -->
   <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="%236B9CFF"/><stop offset="1" stop-color="%23FF6B9C"/></linearGradient></defs><rect rx="28" width="128" height="128" fill="url(%23g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="64">🍳</text></svg>'/>
 
-  <!-- Si tu fournis un vrai PNG, décommente cette ligne et place /icons/ios-touch-icon-180.png :
+  <!-- Si tu fournis un vrai PNG, décommente et place /icons/ios-touch-icon-180.png :
   <link rel="apple-touch-icon" href="/icons/ios-touch-icon-180.png" />
   -->
-
-  <!-- Manifest sera injecté en data URI par JS (avec icônes générées) -->
 
   <style>
     :root{
@@ -115,8 +113,19 @@
       color:#e5e7eb;
       opacity:.85;
     }
+    /* >>> ICI : texte SOUS l'émoji dans la pill <<< */
     .tab-button .pill{
+      display: flex;              /* override de .inline-flex Tailwind */
+      flex-direction: column;     /* empile */
+      align-items: center;
+      gap: .15rem;
+      line-height: 1.1;
+      padding-block: .45rem;
       transition: all .2s;
+    }
+    .tab-button .pill .text-xs{
+      font-size: 0.70rem;
+      opacity: .9;
     }
     .tab-button.active{ opacity:1 }
     .tab-button.active .pill{
@@ -166,14 +175,10 @@
     /* Listes & cartes */
     .card-container{ border-radius:18px }
     .card-container.glass{ color:#e6e9f2 }
-    .subtle{
-      color:#cbd5e1;
-    }
+    .subtle{ color:#cbd5e1; }
 
     /* Modale */
-    #custom-modal .glass{
-      border-radius: 20px;
-    }
+    #custom-modal .glass{ border-radius: 20px; }
 
     /* Photos */
     .hero-image{ border-bottom: 1px solid rgba(255,255,255,.22) }
@@ -233,7 +238,7 @@
     </div>
   </div>
 
-  <!-- === Ton JS d’origine (Firebase + rendu vues) — conservé, avec styles adaptés === -->
+  <!-- === JS (Firebase + vues) === -->
   <script type="module">
     // --- IMPORTS FIREBASE ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
