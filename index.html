@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Cloud Recettes | L'Inspiration Quotidienne 🧑‍🍳</title>
+  <title>Cloud Recettes | L'Inspiration Quotidienne</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,12 +17,8 @@
   <meta name="apple-mobile-web-app-title" content="Cloud Recettes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-  <!-- Favicon SVG (ok desktop) -->
+  <!-- Favicon SVG -->
   <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="%236B9CFF"/><stop offset="1" stop-color="%23FF6B9C"/></linearGradient></defs><rect rx="28" width="128" height="128" fill="url(%23g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="64">🍳</text></svg>'/>
-
-  <!-- Si tu fournis un vrai PNG, décommente et place /icons/ios-touch-icon-180.png :
-  <link rel="apple-touch-icon" href="/icons/ios-touch-icon-180.png" />
-  -->
 
   <style>
     :root{
@@ -41,33 +37,21 @@
                   linear-gradient(180deg, #0a0a0c, #111218 40%, #0b0c12);
       min-height:100%;
     }
-
-    /* Blobs décoratifs (liquid) */
     .liquid-bg::before,
     .liquid-bg::after{
       content:"";
       position:fixed;
-      inset:auto;
-      width:46vmax;
-      height:46vmax;
+      width:46vmax; height:46vmax;
       filter: blur(70px) saturate(140%);
-      opacity:.55;
-      z-index:-1;
-      pointer-events:none;
-      border-radius:50%;
+      opacity:.55; z-index:-1; pointer-events:none; border-radius:50%;
       background: conic-gradient(from 90deg, var(--accent-1), var(--accent-2), var(--accent-3), var(--accent-1));
       animation: floatBlob 18s ease-in-out infinite alternate;
       mix-blend-mode: screen;
     }
     .liquid-bg::before{ top:-12vmax; right:-8vmax; }
     .liquid-bg::after{ bottom:-14vmax; left:-12vmax; animation-duration:22s; }
+    @keyframes floatBlob{ 0%{transform:translate3d(0,0,0) scale(1)} 100%{transform:translate3d(2vmax,-2vmax,0) scale(1.06)} }
 
-    @keyframes floatBlob{
-      0%{ transform: translate3d(0,0,0) scale(1); }
-      100%{ transform: translate3d(2vmax,-2vmax,0) scale(1.06); }
-    }
-
-    /* Glass card utilitaire */
     .glass {
       background: var(--glass-bg);
       -webkit-backdrop-filter: blur(14px) saturate(120%);
@@ -76,29 +60,15 @@
       box-shadow: var(--glass-shadow);
       border-radius: 18px;
     }
-
-    /* Conteneur principal */
-    .main-app-container{
-      padding-bottom: 110px; /* pour la tab bar */
-      min-height: 100dvh;
-    }
-
-    /* Titre dégradé Apple-ish */
+    .main-app-container{ padding-bottom: 110px; min-height: 100dvh; }
     .brand-title{
       background: linear-gradient(90deg, #fff, #CCD6FF 30%, #FFD0E0 60%, #D7FFF2);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
       text-shadow: 0 1px 0 rgba(255,255,255,0.2);
     }
+    .content-scroll-area{ overflow:auto; max-height: calc(100dvh - 180px); }
 
-    /* Zone scrollable (évite que la barre se pousse) */
-    .content-scroll-area{
-      overflow: auto;
-      max-height: calc(100dvh - 180px);
-    }
-
-    /* Tab bar style “liquid glass” */
+    /* Tab bar sans texte — icônes noir & blanc */
     .tab-bar{
       height: calc(78px + env(safe-area-inset-bottom, 0px));
       padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
@@ -108,83 +78,48 @@
       -webkit-backdrop-filter: blur(18px) saturate(140%);
       backdrop-filter: blur(18px) saturate(140%);
     }
-    .tab-button{
-      gap:.35rem;
-      color:#e5e7eb;
-      opacity:.85;
-    }
-    /* >>> ICI : texte SOUS l'émoji dans la pill <<< */
+    .tab-button{ color:#e5e7eb; opacity:.9; }
     .tab-button .pill{
-      display: flex;              /* override de .inline-flex Tailwind */
-      flex-direction: column;     /* empile */
-      align-items: center;
-      gap: .15rem;
-      line-height: 1.1;
-      padding-block: .45rem;
-      transition: all .2s;
+      display:flex; align-items:center; justify-content:center;
+      width:58px; height:42px; margin-inline:auto;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,.28);
+      transition: transform .15s, box-shadow .2s, background .2s, border-color .2s;
     }
-    .tab-button .pill .text-xs{
-      font-size: 0.70rem;
-      opacity: .9;
-    }
-    .tab-button.active{ opacity:1 }
+    .tab-button .icon{ width:22px; height:22px; color: rgba(255,255,255,0.95); }
     .tab-button.active .pill{
-      background: linear-gradient(90deg, rgba(107,156,255,.22), rgba(255,107,156,.22));
-      border: 1px solid rgba(255,255,255,.35);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 8px 22px rgba(0,0,0,.25);
+      background: rgba(255,255,255,0.95);
+      border-color: rgba(255,255,255,.9);
+      box-shadow: 0 8px 22px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.5);
     }
-    .tab-button:not(.active):hover{ transform: translateY(-1px); }
+    .tab-button.active .icon{ color:#0b0b10; }
+    .tab-button:not(.active):hover .pill{ transform: translateY(-1px); }
 
-    /* Boutons primaires */
     .btn-primary{
       background: linear-gradient(180deg, rgba(107,156,255,.95), rgba(107,156,255,.85));
-      color:white; font-weight:700;
-      border-radius: 14px;
-      padding: .75rem 1rem;
+      color:white; font-weight:700; border-radius: 14px; padding: .75rem 1rem;
       border: 1px solid rgba(255,255,255,.35);
       box-shadow: 0 10px 28px rgba(107,156,255,.35);
-      transition: transform .08s ease, box-shadow .15s ease, opacity .2s;
+      transition: transform .08s, box-shadow .15s, opacity .2s;
     }
     .btn-primary:hover{ transform: translateY(-1px); box-shadow:0 14px 34px rgba(107,156,255,.4) }
     .btn-secondary{
       background: linear-gradient(180deg, rgba(255,107,156,.95), rgba(255,107,156,.85));
-      color:white; font-weight:700;
-      border-radius: 12px;
-      padding: .6rem .9rem;
-      border: 1px solid rgba(255,255,255,.35);
-      box-shadow: 0 10px 24px rgba(255,107,156,.32);
-      transition: transform .08s ease, box-shadow .15s ease;
+      color:white; font-weight:700; border-radius: 12px; padding: .6rem .9rem;
+      border: 1px solid rgba(255,255,255,.35); box-shadow: 0 10px 24px rgba(255,107,156,.32);
     }
-
-    /* Inputs en verre */
     .form-input{
-      background: rgba(255,255,255,0.18);
-      color: #f8fafc;
-      border: 1px solid rgba(255,255,255,0.35);
-      border-radius: 12px;
-      outline: none;
-      -webkit-backdrop-filter: blur(10px) saturate(120%);
-      backdrop-filter: blur(10px) saturate(120%);
+      background: rgba(255,255,255,0.18); color:#f8fafc; border:1px solid rgba(255,255,255,0.35);
+      border-radius:12px; outline:none; -webkit-backdrop-filter: blur(10px) saturate(120%); backdrop-filter: blur(10px) saturate(120%);
     }
-    .form-input::placeholder{ color: #cbd5e1 }
-    .form-input:focus{
-      box-shadow: 0 0 0 3px rgba(107,156,255,.28);
-      border-color: rgba(107,156,255,.8);
-    }
+    .form-input::placeholder{ color:#cbd5e1 }
+    .form-input:focus{ box-shadow: 0 0 0 3px rgba(107,156,255,.28); border-color: rgba(107,156,255,.8); }
 
-    /* Listes & cartes */
     .card-container{ border-radius:18px }
-    .card-container.glass{ color:#e6e9f2 }
     .subtle{ color:#cbd5e1; }
-
-    /* Modale */
-    #custom-modal .glass{ border-radius: 20px; }
-
-    /* Photos */
-    .hero-image{ border-bottom: 1px solid rgba(255,255,255,.22) }
-
-    /* Utilitaires de couleur rapide */
-    .ink-300{color:var(--ink-300)} .ink-500{color:var(--ink-500)}
+    #custom-modal .glass{ border-radius:20px; }
+    .hero-image{ border-bottom:1px solid rgba(255,255,255,.22) }
     .accent-text{ color: #e6e9f2 }
   </style>
 </head>
@@ -193,41 +128,63 @@
   <!-- Conteneur principal -->
   <div class="main-app-container max-w-4xl mx-auto p-5 sm:p-8">
     <header class="mb-6 sm:mb-8">
-      <h1 class="text-4xl sm:text-5xl font-extrabold brand-title tracking-tight">Cloud Recettes 🍳</h1>
-      <p id="db-status" class="text-sm ink-300 mt-2">Connexion Cloud en cours... 🔄</p>
+      <h1 class="text-4xl sm:text-5xl font-extrabold brand-title tracking-tight">Cloud Recettes</h1>
+      <p id="db-status" class="text-sm subtle mt-2">Connexion Cloud en cours... 🔄</p>
     </header>
 
     <!-- Zone dynamique -->
     <div id="content-area" class="content-scroll-area space-y-6"></div>
   </div>
 
-  <!-- Barre d'onglets verre liquide -->
-  <nav id="tab-bar" class="tab-bar fixed bottom-0 left-0 right-0 glass">
+  <!-- Barre d'onglets (icônes noir & blanc) -->
+  <nav id="tab-bar" class="tab-bar fixed bottom-0 left-0 right-0 glass" aria-label="Navigation principale">
     <div class="max-w-4xl mx-auto grid grid-cols-4 gap-2">
-      <button data-view="home" class="tab-button flex flex-col items-center py-2">
-        <span class="pill px-4 py-2 rounded-full glass inline-flex items-center gap-2">
-          <span class="text-xl">🏠</span><span class="text-xs">Accueil</span>
+      <!-- Accueil -->
+      <button data-view="home" class="tab-button flex flex-col items-center py-2" aria-label="Accueil">
+        <span class="pill">
+          <!-- home icon -->
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 11l9-8 9 8"></path>
+            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path>
+          </svg>
         </span>
       </button>
-      <button data-view="list" class="tab-button flex flex-col items-center py-2">
-        <span class="pill px-4 py-2 rounded-full glass inline-flex items-center gap-2">
-          <span class="text-xl">📚</span><span class="text-xs">Recettes</span>
+
+      <!-- Recettes / Liste -->
+      <button data-view="list" class="tab-button flex flex-col items-center py-2" aria-label="Recettes">
+        <span class="pill">
+          <!-- book icon -->
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M20 22H6.5A2.5 2.5 0 0 1 4 19.5V5.5A2.5 2.5 0 0 1 6.5 3H20z"></path>
+          </svg>
         </span>
       </button>
-      <button data-view="add" class="tab-button flex flex-col items-center py-2">
-        <span class="pill px-4 py-2 rounded-full glass inline-flex items-center gap-2">
-          <span class="text-xl">➕</span><span class="text-xs">Ajouter</span>
+
+      <!-- Ajouter -->
+      <button data-view="add" class="tab-button flex flex-col items-center py-2" aria-label="Ajouter">
+        <span class="pill">
+          <!-- plus icon -->
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
         </span>
       </button>
-      <button data-view="settings" class="tab-button flex flex-col items-center py-2">
-        <span class="pill px-4 py-2 rounded-full glass inline-flex items-center gap-2">
-          <span class="text-xl">⚙️</span><span class="text-xs">Réglages</span>
+
+      <!-- Réglages -->
+      <button data-view="settings" class="tab-button flex flex-col items-center py-2" aria-label="Réglages">
+        <span class="pill">
+          <!-- settings/gear icon -->
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8.62 4a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
         </span>
       </button>
     </div>
   </nav>
 
-  <!-- Modale (glass) -->
+  <!-- Modale -->
   <div id="custom-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50">
     <div id="modal-content" class="glass w-[92%] max-w-sm mx-auto mt-[15vh] p-6 text-center">
       <p id="modal-text" class="mb-4 text-lg"></p>
@@ -238,44 +195,37 @@
     </div>
   </div>
 
-  <!-- === JS (Firebase + vues) === -->
+  <!-- === JS (Firebase + vues + PWA) === -->
   <script type="module">
-    // --- IMPORTS FIREBASE ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, deleteDoc, setLogLevel, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // ----------------------------------------------------------------------------------
-    // CONFIGURATION FIREBASE 
-    // ----------------------------------------------------------------------------------
     const __firebase_config = '{"apiKey":"AIzaSyDQ7lViDGWm75JlobSR9sJv0wirTsBSw9s","authDomain":"recipes-8ecb7.firebaseapp.com","projectId":"recipes-8ecb7","storageBucket":"recipes-8ecb7.firebasestorage.app","messagingSenderId":"490916438905","appId":"1:490916438905:web:eb136aa7738a795ccfc5a8","measurementId":"G-T3NNS1DP23"}';
     const firebaseConfig = JSON.parse(__firebase_config);
 
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'recipes-8ecb7';
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
-    const IS_CLOUD_ENABLED = true;
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
     const appState = {
       db:null, auth:null, userId:null, isAuthReady:false,
-      recipes:[], activeView:'home', detailRecipeId:null, quantityFactor:1, isLocalMode:false,
-      firebaseConfig
+      recipes:[], activeView:'home', detailRecipeId:null, quantityFactor:1, firebaseConfig
     };
 
-    // === Helpers UI (modale, etc.) ===
+    // --------- UI helpers ----------
     function showCustomModal(message, isConfirm=false){
       return new Promise(resolve=>{
         const modal=document.getElementById('custom-modal');
-        const modalContent=document.getElementById('modal-content');
-        modalContent.innerHTML = `
+        const c=document.getElementById('modal-content');
+        c.innerHTML = `
           <p id="modal-text" class="mb-4 text-lg accent-text"></p>
           <div id="modal-actions" class="flex justify-center gap-3">
             <button id="modal-confirm" class="btn-primary min-w-[90px]">OK</button>
             <button id="modal-cancel" class="btn-secondary min-w-[90px] hidden">Annuler</button>
           </div>`;
-        const t=modalContent.querySelector('#modal-text');
-        const ok=modalContent.querySelector('#modal-confirm');
-        const cancel=modalContent.querySelector('#modal-cancel');
-        t.innerHTML = message;
+        c.querySelector('#modal-text').innerHTML = message;
+        const ok=c.querySelector('#modal-confirm');
+        const cancel=c.querySelector('#modal-cancel');
         if(isConfirm){ cancel.classList.remove('hidden'); ok.textContent='Confirmer'; }
         else{ cancel.classList.add('hidden'); ok.textContent='OK'; }
         ok.onclick=()=>{ modal.classList.add('hidden'); resolve(true); };
@@ -283,36 +233,14 @@
         modal.classList.remove('hidden');
       });
     }
-
-    function showConfigModal(){
-      const keys = Object.keys(appState.firebaseConfig);
-      const rows = keys.map(k=>`
-        <div class="flex flex-col sm:flex-row justify-between py-2 border-b border-white/15 last:border-b-0">
-          <span class="text-sm ink-300 w-28">${k}:</span>
-          <code class="text-xs font-mono text-slate-200 break-all ml-0 sm:ml-4">${appState.firebaseConfig[k]}</code>
-        </div>`).join('');
-      const modal=document.getElementById('custom-modal');
-      const content=document.getElementById('modal-content');
-      content.innerHTML = `
-        <h3 class="text-xl font-bold brand-title mb-4 pb-2 border-b border-white/20">🐞 Configuration Firebase</h3>
-        <div class="text-left p-2 glass">${rows}</div>
-        <button id="modal-close" class="btn-primary mt-6">Fermer</button>`;
-      document.getElementById('modal-close').onclick=()=>modal.classList.add('hidden');
-      modal.classList.remove('hidden');
-    }
-    window.showConfigModal = showConfigModal;
-
-    // Fichiers → Base64
     function readFileAsDataURL(file){
       return new Promise((res,rej)=>{
         const r=new FileReader();
-        r.onload=()=>res(r.result);
-        r.onerror=rej;
-        r.readAsDataURL(file);
+        r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file);
       });
     }
 
-    // === Firebase init/auth ===
+    // --------- Firebase ----------
     async function initFirebase(){
       const status=document.getElementById('db-status');
       try{
@@ -328,7 +256,7 @@
           if(user){
             appState.userId=user.uid; appState.isAuthReady=true;
             status.textContent=`✅ Connecté (ID: ${user.uid.substring(0,8)}...)`;
-            status.classList.remove('ink-300'); status.classList.add('text-green-300');
+            status.classList.remove('subtle'); status.classList.add('text-green-300');
             subscribeToRecipes();
           }else{
             appState.isAuthReady=true; renderApp();
@@ -338,15 +266,13 @@
         console.error(e);
         status.textContent=`❌ Erreur de connexion: ${e.code}`;
         status.classList.add('text-red-300');
-        showCustomModal(`Erreur critique Firebase: ${e.code}. Vérifiez Auth & domaines autorisés.`, false);
+        showCustomModal(`Erreur Firebase: ${e.code}`, false);
       }
     }
-
     function getRecipesCollectionRef(){
       if(!appState.db||!appState.userId) return null;
       return collection(appState.db, `artifacts/${appId}/users/${appState.userId}/recipes`);
     }
-
     function subscribeToRecipes(){
       const ref=getRecipesCollectionRef(); if(!ref) return;
       const q=query(ref);
@@ -364,6 +290,7 @@
       });
     }
 
+    // --------- Navigation / vues ----------
     window.switchView = (view, docId=null)=>{ appState.activeView=view; appState.detailRecipeId=docId; renderApp(); };
     window.updateQuantityFactor = (f)=>{ appState.quantityFactor=f; renderApp(); };
 
@@ -384,7 +311,7 @@
         case 'add': renderAddForm(container); break;
         case 'settings': renderSettings(container); break;
         case 'detail': renderRecipeDetail(container); break;
-        default: renderHome(container);
+        default: appState.activeView='home'; renderHome(container);
       }
     }
 
@@ -441,7 +368,7 @@
     function renderRecipeList(container){
       container.innerHTML = `
         <div class="glass card-container p-6">
-          <h2 class="text-2xl font-bold mb-6 brand-title">Toutes vos Recettes 📚</h2>
+          <h2 class="text-2xl font-bold mb-6 brand-title">Toutes vos Recettes</h2>
           ${appState.recipes.length===0 ?
             '<p class="subtle text-center py-10">Aucune recette pour l’instant. Cliquez sur Ajouter !</p>' :
             `<div id="recipe-list" class="divide-y divide-white/10">
@@ -550,7 +477,7 @@
     function renderAddForm(container){
       container.innerHTML = `
         <div class="glass card-container p-6">
-          <h2 class="text-2xl font-bold mb-6 brand-title">Ajouter une Recette ✍️</h2>
+          <h2 class="text-2xl font-bold mb-6 brand-title">Ajouter une Recette</h2>
           <form id="add-recipe-form" class="space-y-6">
             <div>
               <label for="title" class="block text-sm subtle mb-1">Titre *</label>
@@ -625,34 +552,6 @@
       urlInput.addEventListener('input', updatePreview);
     }
 
-    function renderSettings(container){
-      container.innerHTML = `
-        <div class="glass card-container p-6 space-y-6">
-          <h2 class="text-2xl font-bold brand-title">Réglages & Cloud ⚙️</h2>
-          <p class="subtle text-sm">Gérez votre connexion et vos données.</p>
-
-          <div class="glass p-4">
-            <h3 class="text-xl font-semibold text-white/90"><span class="mr-2">👤</span> Identifiant Utilisateur</h3>
-            <p class="text-sm subtle break-all mt-2">ID: <span class="font-mono font-bold text-white/90">${appState.userId || 'Non Authentifié'}</span></p>
-          </div>
-
-          <div class="glass p-4 border border-red-400/30">
-            <h3 class="text-xl font-semibold text-red-200 mb-2"><span class="mr-2">🐞</span> Configuration Firebase (Debug)</h3>
-            <p class="text-sm text-red-200/80">⚠️ Informations sensibles pour le débogage.</p>
-            <button onclick="window.showConfigModal()" class="btn-secondary w-full mt-3">Afficher la configuration</button>
-          </div>
-
-          <div class="glass p-4 border border-blue-300/30">
-            <h3 class="text-xl font-semibold" style="color:#BFD6FF">Gestion des Données Cloud</h3>
-            <p class="subtle text-sm">Export, import et réinitialisation.</p>
-            <button onclick="window.exportData()" class="btn-primary w-full mt-3">Exporter (JSON) 📥</button>
-            <label for="import-file" class="block mt-4 text-sm subtle">Importer depuis un fichier JSON :</label>
-            <input type="file" id="import-file" accept=".json" onchange="window.handleImport(event)" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/25 cursor-pointer">
-            <button onclick="window.handleClearAllData()" class="btn-secondary w-full mt-6">Réinitialiser (Tout supprimer) 💀</button>
-          </div>
-        </div>`;
-    }
-
     async function handleAddRecipe(e){
       e.preventDefault();
       const form=e.target; const btn=document.getElementById('submit-btn');
@@ -689,16 +588,27 @@
       }
     }
 
-    window.handleDeleteRecipe = async (id,title)=>{
-      const ok=await showCustomModal(`Supprimer "${title}" ?`, true);
-      if(!ok) return;
-      try{
-        const ref=getRecipesCollectionRef(); if(!ref) throw new Error("Base de données non prête.");
-        await deleteDoc(doc(ref,id));
-        showCustomModal('Recette supprimée 🗑️', false);
-        switchView('list');
-      }catch(e){ showCustomModal(`Erreur suppression: ${e.message}`, false); }
-    };
+    function renderSettings(container){
+      container.innerHTML = `
+        <div class="glass card-container p-6 space-y-6">
+          <h2 class="text-2xl font-bold brand-title">Réglages & Cloud</h2>
+          <p class="subtle text-sm">Gérez votre connexion et vos données.</p>
+
+          <div class="glass p-4">
+            <h3 class="text-xl font-semibold text-white/90"><span class="mr-2">👤</span> Identifiant Utilisateur</h3>
+            <p class="text-sm subtle break-all mt-2">ID: <span class="font-mono font-bold text-white/90">${appState.userId || 'Non Authentifié'}</span></p>
+          </div>
+
+          <div class="glass p-4 border border-blue-300/30">
+            <h3 class="text-xl font-semibold" style="color:#BFD6FF">Données Cloud</h3>
+            <p class="subtle text-sm">Export, import et réinitialisation.</p>
+            <button onclick="window.exportData()" class="btn-primary w-full mt-3">Exporter (JSON) 📥</button>
+            <label for="import-file" class="block mt-4 text-sm subtle">Importer depuis un fichier JSON :</label>
+            <input type="file" id="import-file" accept=".json" onchange="window.handleImport(event)" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/25 cursor-pointer">
+            <button onclick="window.handleClearAllData()" class="btn-secondary w-full mt-6">Réinitialiser (Tout supprimer)</button>
+          </div>
+        </div>`;
+    }
 
     window.exportData = function(){
       const data = appState.recipes.map(({id,createdAt, ...rest})=>rest);
@@ -708,7 +618,6 @@
       const a=document.createElement('a'); a.href=uri; a.download=name; a.click();
       showCustomModal('Données exportées 📥', false);
     };
-
     window.handleImport = async function(ev){
       const file=ev.target.files[0]; if(!file) return;
       const reader=new FileReader();
@@ -731,7 +640,6 @@
       };
       reader.readAsText(file);
     };
-
     window.handleClearAllData = async function(){
       const ok=await showCustomModal('Supprimer TOUTES les recettes du Cloud ?', true);
       if(!ok) return;
@@ -741,103 +649,58 @@
         const batch=writeBatch(appState.db);
         snap.docs.forEach(d=>batch.delete(d.ref));
         await batch.commit();
-        showCustomModal('Tout a été supprimé. 🗑️', false);
+        showCustomModal('Tout a été supprimé.', false);
         switchView('home');
       }catch(err){ showCustomModal('Erreur lors de la suppression.', false); }
     };
 
-    // === Icône & manifest auto-générés ===
+    // --------- Icône & manifest auto-générés (PWA) ----------
     function drawIcon(size=512){
       const cnv=document.createElement('canvas'); cnv.width=cnv.height=size;
       const ctx=cnv.getContext('2d');
-
-      // Fond arrondi
-      const r=size*0.22;
-      const pad=size*0.06;
-      const w=size-2*pad, h=w;
-      const x=pad, y=pad;
-
+      const r=size*0.22, pad=size*0.06, w=size-2*pad, h=w, x=pad, y=pad;
       ctx.save();
-      const roundRect=(x,y,w,h,r)=>{
-        ctx.beginPath();
-        ctx.moveTo(x+r,y);
-        ctx.arcTo(x+w,y,x+w,y+h,r);
-        ctx.arcTo(x+w,y+h,x,y+h,r);
-        ctx.arcTo(x,y+h,x,y,r);
-        ctx.arcTo(x,y,x+w,y,r);
-        ctx.closePath();
-      };
-      roundRect(x,y,w,h,r);
-      ctx.clip();
-
-      // Dégradé
+      const rr=(x,y,w,h,r)=>{ ctx.beginPath(); ctx.moveTo(x+r,y);
+        ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+        ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
+      rr(x,y,w,h,r); ctx.clip();
       const g=ctx.createLinearGradient(0,0,size,size);
       g.addColorStop(0,"#6B9CFF"); g.addColorStop(.5,"#FF6B9C"); g.addColorStop(1,"#8AF2D3");
       ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
-
-      // Reflets
-      ctx.globalAlpha=.22;
-      ctx.fillStyle="#fff";
-      ctx.beginPath();
-      ctx.ellipse(size*.35,size*.28,size*.35,size*.20, -0.3, 0, Math.PI*2);
-      ctx.fill();
-      ctx.globalAlpha=1;
-
-      // Emoji 🍳
+      ctx.globalAlpha=.22; ctx.fillStyle="#fff"; ctx.beginPath();
+      ctx.ellipse(size*.35,size*.28,size*.35,size*.20, -0.3, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
       ctx.font=`${Math.round(size*0.52)}px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji`;
-      ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.fillText("🍳", size/2, size/2+size*0.02);
-
-      ctx.restore();
-
-      // Liseré
-      ctx.strokeStyle="rgba(255,255,255,.65)";
-      ctx.lineWidth=Math.max(2,size*0.02);
-      roundRect(x,y,w,h,r);
-      ctx.stroke();
-
+      ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("🍳", size/2, size/2+size*0.02);
+      ctx.restore(); ctx.strokeStyle="rgba(255,255,255,.65)"; ctx.lineWidth=Math.max(2,size*0.02); rr(x,y,w,h,r); ctx.stroke();
       return cnv.toDataURL("image/png");
     }
-
     function ensureAppleTouchIcon(){
-      // Si aucun apple-touch-icon fourni, on génère un 180x180
-      const has = [...document.querySelectorAll('link[rel="apple-touch-icon"]')].length>0;
-      if(!has){
+      if(!document.querySelector('link[rel="apple-touch-icon"]')){
         const link=document.createElement('link');
-        link.rel='apple-touch-icon';
-        link.sizes='180x180';
-        link.href=drawIcon(180);
+        link.rel='apple-touch-icon'; link.sizes='180x180'; link.href=drawIcon(180);
         document.head.appendChild(link);
       }
     }
-
     function installManifestWithIcons(){
       const icons = [192,256,512].map(sz=>({ src: drawIcon(sz), sizes: `${sz}x${sz}`, type: "image/png", purpose: "any maskable" }));
-      const manifest = {
-        name: "Cloud Recettes",
-        short_name: "Recettes",
-        display: "standalone",
-        start_url: ".",
-        background_color: "#0a0a0c",
-        theme_color: "#0a0a0c",
-        icons
-      };
+      const manifest = { name:"Cloud Recettes", short_name:"Recettes", display:"standalone", start_url:".", background_color:"#0a0a0c", theme_color:"#0a0a0c", icons };
       const blob = new Blob([JSON.stringify(manifest)], {type:"application/manifest+json"});
       const url = URL.createObjectURL(blob);
-      const link=document.createElement('link'); link.rel='manifest'; link.href=url;
-      document.head.appendChild(link);
+      const link=document.createElement('link'); link.rel='manifest'; link.href=url; document.head.appendChild(link);
     }
 
+    // --------- Boot ---------
     document.addEventListener('DOMContentLoaded', ()=>{
+      // forcer arrivée sur Accueil
+      appState.activeView = 'home';
       initFirebase();
       document.querySelectorAll('.tab-button').forEach(b=>{
         b.addEventListener('click', ()=> switchView(b.getAttribute('data-view')) );
       });
       document.getElementById('custom-modal').classList.add('hidden');
-
-      // Icônes & manifest
-      ensureAppleTouchIcon();
-      installManifestWithIcons();
+      ensureAppleTouchIcon(); installManifestWithIcons();
+      // premier rendu (Accueil) même avant auth pour l’effet immédiat
+      renderApp();
     });
   </script>
 </body>
